@@ -9,19 +9,6 @@ provider "ibm" {
   zone             = var.ibmcloud_zone
 }
 
-# Create a random_id label
-resource "random_id" "label" {
-  count       = 1
-  byte_length = "2" # Since we use the hex, the word lenght would double
-}
-
-locals {
-  cluster_id = var.cluster_id == "" ? random_id.label[0].hex : (var.cluster_id_prefix == "" ? var.cluster_id : "${var.cluster_id_prefix}-${var.cluster_id}")
-  # Generates vm_id as combination of vm_id_prefix + (random_id or user-defined vm_id)
-  name_prefix = var.name_prefix == "" ? random_id.label[0].hex : "${var.name_prefix}"
-  node_prefix = var.use_zone_info_for_names ? "${var.ibmcloud_zone}-" : ""
-}
-
 ### Prepares the Bastion Support machine
 module "prepare" {
   source = "./modules/1_prepare"
@@ -50,46 +37,4 @@ module "prepare" {
   rhel_subscription_activationkey = var.rhel_subscription_activationkey
   ansible_repo_name               = var.ansible_repo_name
   rhel_smt                        = var.rhel_smt
-}
-
-module "support" {
-  depends_on = [module.prepare]
-  source     = "./modules/2_support"
-
-  bastion_ip        = module.prepare.bastion_ip
-  bastion_public_ip = module.prepare.bastion_public_ip
-  gateway_ip        = module.prepare.gateway_ip
-  cidr              = module.prepare.cidr
-  cluster_domain    = var.cluster_domain
-  cluster_id        = local.cluster_id
-  name_prefix       = local.name_prefix
-  node_prefix       = local.node_prefix
-
-  rhel_username = var.rhel_username
-  private_key   = local.private_key
-  ssh_agent     = var.ssh_agent
-
-  openshift_install_tarball = var.openshift_install_tarball
-  openshift_client_tarball  = var.openshift_client_tarball
-  pull_secret               = file(coalesce(var.pull_secret_file, "/dev/null"))
-  ansible_support_version   = var.ansible_support_version
-
-  connection_timeout = var.connection_timeout
-}
-
-module "worker" {
-  depends_on = [module.prepare]
-  source     = "./modules/4_worker"
-
-  bastion_ip          = module.prepare.bastion_ip
-  worker              = var.worker
-  rhcos_image_name    = var.rhcos_image_name
-  service_instance_id = var.service_instance_id
-  network_name        = var.network_name
-  system_type         = var.system_type
-  public_key_name     = var.public_key_name
-  processor_type      = var.processor_type
-  name_prefix         = local.name_prefix
-
-  workers_version = var.workers_version
 }

@@ -3,23 +3,9 @@
 # SPDX-License-Identifier: Apache2.0
 ################################################################
 
-### IBM Cloud details
 ibmcloud_api_key    = "<key>"
-ibmcloud_region     = "<region>"
-ibmcloud_zone       = "<zone>"
-service_instance_id = "<cloud_instance_ID>"
+pvs_ibmcloud_region     = "<region>"
+pvs_ibmcloud_zone       = "<zone>"
+pvs_service_instance_id = "<cloud_instance_ID>"
 
-# Machine Details
-worker            = { memory = "16", processors = "0.5", "count" = 1 }
-cluster_id_prefix = rdr-multi
-ignition_file     = "data/worker.ign"
-
-rhcos_image_name = "rhcos-4.13"
-
-ignition_hostname = demo.ocp-power.xyz
-
-# PowerVS configuration
-processor_type  = "shared"
-system_type     = "s922"
-network_name    = "ocp-net"
-public_key_name = "ex-key"
+vpc_service_instance_id = "<cloud_instance_ID>"
